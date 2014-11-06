@@ -5,10 +5,8 @@ bzmigrate.pl is a Perl program to parse the XML output of Bugzilla
 (2.22 onward?) into structures suitable for programmatic upload to a
 new bug tracker; initally targeting GitHub Issues (v3).
 
-The script inputs values from environment variables and/or command
-line options. 
-
-If run with -i option, it prompts for the values interactively.
+The script can be run in interactive or batch mode. If run with -i
+option, it prompts for the values interactively.
 
 Note that Github Issues API does not currently allow attaching files
 programatically so the script just prints its IDs and filenames. 
