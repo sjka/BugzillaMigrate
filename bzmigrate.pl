@@ -36,7 +36,7 @@ sub usage
         "\t-D\tuse dumper\n" .
         "\t-n\tdry run\n" .
         "\t-R\tskip RESOLVED/VERIFIED bugs\n" .
-        "\t-i\tinteractive mode, uses environment variables\n" .
+        "\t-i\tinteractive mode\n" .
   "\t-f\tXML file with Bugzilla data for one or more bugs\n" .
   "\t-l\tGithub login (GITHUB_LOGIN)\n" .
   "\t-r\tGithub repo (GITHUB_REPO)\n" .
@@ -128,6 +128,7 @@ if(!($xml_filename &&
 my $xml = new XML::Simple;
 my $root_xml = $xml->XMLin($xml_filename,
          ForceArray => ['long_desc', 'attachment']);
+my $bugzilla_url = $root_xml->{'urlbase'};
 print Dumper($root_xml) if ($dumper);
 
 my @bugs = $root_xml->{'bug'};
@@ -193,17 +194,19 @@ foreach my $bugdummy (@bugs){
     $body .= "\n";
 
     # ignore attachments
-    #if (@{$bug->{'attachment'}}) {
-    #    $body .= "Original attachment names and IDs:\n";
-    #    foreach my $attachment (@{$bug->{'attachment'}}) {
-    #        my $filename = $attachment->{'filename'};
-    #        utf8::encode($filename) if (utf8::is_utf8($filename));
-    #        $body .= "- _" . $filename . "_" .
-    #            " (ID " . $attachment->{'attachid'} . ")\n";
-    #    }
-    #    $body .= "\n";
-    #}
-
+    if ($bug->{'attachment'}) {
+        if (@{$bug->{'attachment'}}) {
+            $body .= "Original attachment names and IDs:\n";
+            foreach my $attachment (@{$bug->{'attachment'}}) {
+                my $filename = $attachment->{'filename'};
+                utf8::encode($filename) if (utf8::is_utf8($filename));
+                $body .= "- _[" . $filename . "]($bugzilla_url/attachment.cgi?id=" . $attachment->{'attachid'} . ")" . "_" .
+                    " (ID " . $attachment->{'attachid'} . ")\n";
+            }
+            $body .= "\n";
+        }
+    }
+  
     my $comment;
     foreach my $desc (@{$bug->{'long_desc'}}){
       # Some names can be in Unicode, convert them to prevent HTTP::Message
