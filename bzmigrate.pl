@@ -142,6 +142,8 @@ my $issue = $gh->issue;
 
 my $i=0;
 
+my $baseurl = $root_xml->{urlbase};
+
 foreach my $bug (@{$root_xml->{bug}}) {
 
     # get the bug ID
@@ -167,7 +169,7 @@ foreach my $bug (@{$root_xml->{bug}}) {
     }
 
     # Process titles
-    my $title = "$bug->{'short_desc'} (Bugzilla #$id)";
+    my $title = "$bug->{'short_desc'}";
     $title =~ s/^RFE: //; # strip the Bugzilla RFE prefix
     # make sure that the title is unicode
     utf8::encode($title);
@@ -181,7 +183,8 @@ foreach my $bug (@{$root_xml->{bug}}) {
 
     # each bug has a list of long_desc for the original description
     # and each comment thereafter
-    my $body = "status $status " .
+    my $body = "migrated from Bugzilla [#$id](".$baseurl."show_bug.cgi?id=".$id.")\n".
+        "status $status " .
         "severity *$severity* " .
         "in component *$component* " .
         "for *$milestone*\n";
