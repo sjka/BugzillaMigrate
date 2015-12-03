@@ -131,8 +131,7 @@ my $root_xml = $xml->XMLin($xml_filename,
 my $bugzilla_url = $root_xml->{'urlbase'};
 print Dumper($root_xml) if ($dumper);
 
-my @bugs = $root_xml->{'bug'};
-print "=== Bugs:\n" . Dumper(@bugs) if ($dumper);
+print "=== Bugs:\n" . Dumper($root_xml->{bug}) if ($dumper);
 
 my $gh = Net::GitHub::V3->new(
   login => $github_login,
@@ -143,10 +142,7 @@ my $issue = $gh->issue;
 
 my $i=0;
 
-# this is a frustrating hack because I don't understand how perl works
-foreach my $bugdummy (@bugs){
-  for(my $i=0; $i <= (@$bugdummy); $i++){
-    my $bug = $bugdummy->[$i];
+foreach my $bug (@{$root_xml->{bug}}) {
 
     # get the bug ID
     my $id = $bug->{'bug_id'};
@@ -158,7 +154,7 @@ foreach my $bugdummy (@bugs){
     # check the product
     my $product = $bug->{'product'};
     if ($product ne $migrate_product){
-      print ("Skipping bug #$id - wrong product (\"$product\")\n");
+      print ("Skipping bug # $id - wrong product (\"$product\")\n");
       next;
     }
 
@@ -256,7 +252,7 @@ foreach my $bugdummy (@bugs){
       # actually submit the issue to GitHub
       my $iss = $issue->create_issue({
                 title => $title,
-                labels => @labels,
+                labels => \@labels,
                 body => $body});
       my $issue_id = $iss->{number};
       print "Bugzilla bug #$id migrated to Github Issue $issue_id";
@@ -278,5 +274,4 @@ foreach my $bugdummy (@bugs){
     #    print "  attachment \"" . $attachment->{'filename'} . "\"" .
     #        " (ID " . $attachment->{'attachid'} . ")\n";
     #}
-  }
 }
